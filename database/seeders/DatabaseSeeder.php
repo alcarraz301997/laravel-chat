@@ -21,6 +21,8 @@ class DatabaseSeeder extends Seeder
 
         $this->call([
             UsersSeeder::class,
+            ContentTypeSeeder::class,
+            ConversationTypeSeeder::class,
         ]);
     }
 }
