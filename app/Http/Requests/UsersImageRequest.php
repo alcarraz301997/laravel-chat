@@ -7,7 +7,7 @@ use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
 
-class UsersRequest extends FormRequest
+class UsersImageRequest extends FormRequest
 {
     use HasResponse;
     /**
@@ -25,20 +25,9 @@ class UsersRequest extends FormRequest
      */
     public function rules(): array
     {
-        $rules = [
-            'name' => ['required','string', 'max:100'],
-            'surname' => ['required','string', 'max:100'],
-            'email' => ['required','string','email'],
-            'address' => ['nullable','string'],
-            'phone' => ['nullable','string'],
-            'birthday' => ['required','date', 'date_format:Y-m-d']
+        return [
+            'img_profile' => ['required', 'image']
         ];
-
-        if ($this->isMethod('POST')) {
-            $rules['password'] = ['required','string', 'regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*(_|[^\w])).+$/'];
-        }
-
-        return $rules;
     }
 
     public function failedValidation(Validator $validator)

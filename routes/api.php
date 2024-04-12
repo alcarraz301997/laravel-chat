@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\UsersController;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Route;
 
@@ -20,6 +21,14 @@ Route::prefix('v1')->middleware('auth')->group(function () {
         Route::get('me', [AuthController::class, 'me']);
         Route::post('logout', [AuthController::class, 'logout']);
         Route::post('refresh', [AuthController::class, 'refresh']);
+    });
+
+    Route::group(['prefix' => 'user'], function () {
+        Route::get('', [UsersController::class, 'list']);
+        Route::post('', [UsersController::class, 'store'])->withoutMiddleware(['auth']);
+        Route::post('img', [UsersController::class, 'updateImage']);
+        Route::patch('', [UsersController::class, 'update']);
+        Route::delete('', [UsersController::class, 'delete']);
     });
 });
 

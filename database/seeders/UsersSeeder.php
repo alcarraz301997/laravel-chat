@@ -23,8 +23,9 @@ class UsersSeeder extends Seeder
             'email' => 'junior@gmail.com',
             'password' => bcrypt('Alcarraz30.'),
             'address' => 'El pinar',
-            'phone' => '(+51) 921873412',
+            'phone' => '(+51) 921457841',
             'birthday' => '1997-05-30',
+            'img_profile' => 'public/profile/default/user.png'
         ]);
 
         User::create([
@@ -33,8 +34,9 @@ class UsersSeeder extends Seeder
             'email' => 'liseth@gmail.com',
             'password' => bcrypt('Liseth02.'),
             'address' => 'Jose Olaya',
-            'phone' => '(+51) 990333703',
+            'phone' => '(+51) 985632158',
             'birthday' => '1994-08-02',
+            'img_profile' => 'public/profile/default/user.png'
         ]);
     }
 
