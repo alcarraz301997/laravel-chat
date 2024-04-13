@@ -23,6 +23,8 @@ class Messages extends Model
         //
     ];
 
+    protected $dateFormat = 'Y-m-d H:i:s';
+
     # Relations
     public function conversationType(): HasOne
     {

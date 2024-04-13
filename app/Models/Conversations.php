@@ -4,7 +4,9 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Tymon\JWTAuth\Facades\JWTAuth;
 
 class Conversations extends Model
 {
@@ -14,13 +16,26 @@ class Conversations extends Model
     protected $fillable = [
         'name',
         'type_id',
+        'user_created',
         'status'
     ];
+
+    protected $hidden = [
+        'created_at',
+        'updated_at'
+    ];
+
+    protected $dateFormat = 'Y-m-d H:i:s';
 
     # Relations
     public function type(): HasOne
     {
         return $this->hasOne(ConversationTypes::class, 'id', 'type_id');
+    }
+
+    public function participants(): HasMany
+    {
+        return $this->hasMany(Participants::class, 'conversation_id', 'id')->active();
     }
 
     # Query scopes
@@ -34,10 +49,10 @@ class Conversations extends Model
         return $query->where('status', 1);
     }
 
-    // public function scopeParticipant($query, $conversation, $user)
-    // {
-    //     return $query->where('conversation_id', $conversation)->where('user_id', $user);
-    // }
+    public function scopeParticipant($query, $conversation, $user)
+    {
+        return $query->where('conversation_id', $conversation)->where('user_id', $user);
+    }
 
     # Filtros
     public function scopeConversationFilters($query)
@@ -53,6 +68,10 @@ class Conversations extends Model
             request('type_id'),
             fn ($query) => $query->where('type_id', request('type_id'))
         );
+
+        #Filtro de conversaciones/grupos del usuario
+        $query->whereHas('participants', fn ($query) => $query->where('user_id', JWTAuth::user()->id));
+
         #Filtro de estados
         $query->when(
             request('status') !== null,

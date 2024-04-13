@@ -27,6 +27,13 @@ class User extends Authenticatable implements JWTSubject
         'status'
     ];
 
+    protected $hidden = [
+        'created_at',
+        'updated_at'
+    ];
+
+    protected $dateFormat = 'Y-m-d H:i:s';
+
     # Query scopes
     public function scopeActiveForID($query, $id)
     {
@@ -80,17 +87,6 @@ class User extends Authenticatable implements JWTSubject
             fn ($query) => $query->active()
         );
     }
-
-    /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var array<int, string>
-     */
-    protected $hidden = [
-        'password',
-        'created_at',
-        'updated_at'
-    ];
 
     /**
      * The attributes that should be cast.

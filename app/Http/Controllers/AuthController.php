@@ -45,7 +45,7 @@ class AuthController extends Controller
                 'access_token' => $token,
                 'token_type' => 'bearer',
                 'expires_in' => JWTAuth::factory()->getTTL() * 2000,
-                'user' => $user
+                'user' => UsersResource::make($user)
             ];
         } catch (\Throwable $th) {
             throw $th;
@@ -55,7 +55,7 @@ class AuthController extends Controller
     public function me()
     {
         try {
-            return $this->successResponse('OK', JWTAuth::user());
+            return $this->successResponse('OK', UsersResource::make(JWTAuth::user()));
         } catch (\Throwable $th) {
             throw $th;
         }

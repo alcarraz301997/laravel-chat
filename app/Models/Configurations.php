@@ -23,6 +23,8 @@ class Configurations extends Model
         'updated_at'
     ];
 
+    protected $dateFormat = 'Y-m-d H:i:s';
+
     # Relations
     public function user(): HasOne
     {

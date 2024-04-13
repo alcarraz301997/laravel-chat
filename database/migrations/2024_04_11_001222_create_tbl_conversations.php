@@ -13,12 +13,14 @@ return new class extends Migration
     {
         Schema::create('tbl_conversations', function (Blueprint $table) {
             $table->id();
-            $table->string('name', 100);
+            $table->string('name', 100)->nullable();
             $table->bigInteger('type_id')->unsigned();
+            $table->bigInteger('user_created')->unsigned();
             $table->char('status', 1)->default(1)->comment('0: Inactive, 1: Active, 2: Delete');
             $table->timestamps();
 
             $table->foreign('type_id')->references('id')->on('tbl_conversation_types');
+            $table->foreign('user_created')->references('id')->on('tbl_user');
         });
     }
 

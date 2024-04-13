@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\ConversationsController;
 use App\Http\Controllers\UsersController;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Route;
@@ -29,6 +30,14 @@ Route::prefix('v1')->middleware('auth')->group(function () {
         Route::post('img', [UsersController::class, 'updateImage']);
         Route::patch('', [UsersController::class, 'update']);
         Route::delete('', [UsersController::class, 'delete']);
+    });
+
+    Route::group(['prefix' => 'conversations'], function () {
+        Route::get('', [ConversationsController::class, 'list']);
+        Route::get('{id}', [ConversationsController::class, 'listConversation']);
+        Route::post('', [ConversationsController::class, 'store']);
+        Route::patch('{id}', [ConversationsController::class, 'updateName']);
+        Route::delete('{id}', [ConversationsController::class, 'delete']);
     });
 });
 

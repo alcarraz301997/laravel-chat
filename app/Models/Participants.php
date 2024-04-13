@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 class Participants extends Model
 {
     use HasFactory;
-    protected $table = "tbl_content_types";
+    protected $table = "tbl_participants";
 
     protected $fillable = [
         'conversation_id',
@@ -21,6 +21,8 @@ class Participants extends Model
         'created_at',
         'updated_at'
     ];
+
+    protected $dateFormat = 'Y-m-d H:i:s';
 
     # Relations
     public function conversationType(): HasOne

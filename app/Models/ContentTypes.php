@@ -20,6 +20,8 @@ class ContentTypes extends Model
         'updated_at'
     ];
 
+    protected $dateFormat = 'Y-m-d H:i:s';
+
     # Query scopes
     public function scopeActiveForID($query, $id)
     {
