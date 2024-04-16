@@ -39,10 +39,7 @@ class ParticipantsService
             $conversation = Conversations::activeForID($params['conversation_id'])->where('type_id', 2)->first();
             if(!$conversation) return $this->errorResponse('El chat no es grupo para agregar personas', 400);
 
-            $participant = Participants::create([
-                'conversation_id' => $params['conversation_id'],
-                'user_id' => $params['user_id']
-            ]);
+            $participant = Participants::create($params);
             $participant->fresh();
 
             DB::commit();

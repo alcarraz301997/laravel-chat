@@ -16,6 +16,8 @@ class Messages extends Model
         'user_id',
         'content',
         'type_content_id',
+        'created_at',
+        'updated_at',
         'status'
     ];
 
@@ -26,9 +28,9 @@ class Messages extends Model
     protected $dateFormat = 'Y-m-d H:i:s';
 
     # Relations
-    public function conversationType(): HasOne
+    public function conversation(): HasOne
     {
-        return $this->hasOne(ConversationTypes::class, 'id', 'conversation_id');
+        return $this->hasOne(Conversations::class, 'id', 'conversation_id');
     }
 
     public function user(): HasOne
@@ -67,10 +69,10 @@ class Messages extends Model
         );
 
         #Filtro de id de conversación
-        $query->when(
-            request('conversation_id'),
-            fn ($query) => $query->where('conversation_id', request('conversation_id'))
-        );
+        // $query->when(
+        //     request('conversation_id'),
+        //     fn ($query) => $query->where('conversation_id', request('conversation_id'))
+        // );
 
         #Filtro de usuario
         $query->when(

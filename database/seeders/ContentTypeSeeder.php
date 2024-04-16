@@ -18,8 +18,9 @@ class ContentTypeSeeder extends Seeder
 
     public function runDataDefault(){
         ContentTypes::create(['name' => 'Texto']);
-        ContentTypes::create(['name' => 'Imagen']);
+        ContentTypes::create(['name' => 'Imagen/Video']);
         ContentTypes::create(['name' => 'Archivo']);
+        // ContentTypes::create(['name' => 'Eliminado']);
     }
 
     public function runDataFake() {

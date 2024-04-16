@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ConversationsController;
+use App\Http\Controllers\MessagesController;
 use App\Http\Controllers\ParticipantsController;
 use App\Http\Controllers\UsersController;
 use Carbon\Carbon;
@@ -45,6 +46,12 @@ Route::prefix('v1')->middleware('auth')->group(function () {
         // Route::get('', [ParticipantsController::class, 'list']);
         Route::post('', [ParticipantsController::class, 'store']);
         Route::delete('{id}', [ParticipantsController::class, 'delete']);
+    });
+
+    Route::group(['prefix' => 'messages'], function () {
+        Route::get('{id}', [MessagesController::class, 'list']);
+        Route::post('', [MessagesController::class, 'store']);
+        Route::delete('{id}', [MessagesController::class, 'delete']);
     });
 });
 
