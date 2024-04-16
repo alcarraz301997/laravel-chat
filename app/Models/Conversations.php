@@ -33,6 +33,11 @@ class Conversations extends Model
         return $this->hasOne(ConversationTypes::class, 'id', 'type_id');
     }
 
+    public function user(): HasOne
+    {
+        return $this->hasOne(User::class, 'id', 'user_created');
+    }
+
     public function participants(): HasMany
     {
         return $this->hasMany(Participants::class, 'conversation_id', 'id')->active();

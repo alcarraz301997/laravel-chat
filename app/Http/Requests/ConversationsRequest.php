@@ -31,7 +31,7 @@ class ConversationsRequest extends FormRequest
 
         if ($this->isMethod('POST')) {
             $rules['type_id'] = ['required','integer'];
-            $rules['user_id'] = $this->input('type_id') == 1 ? ['required', 'integer'] : [];
+            $rules['user_id'] = $this->input('type_id') == 1 ? ['required', 'integer', 'validate_ids_exist:User'] : [];
             $rules['users_id'] = $this->input('type_id') == 2 ? ['required', 'array'] : [];
         }
 

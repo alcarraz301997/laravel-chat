@@ -14,6 +14,27 @@ class ConversationsResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        return parent::toArray($request);
+        $type = $this->relationLoaded('type') ? $this->whenLoaded('type') : null;
+        $user = $this->relationLoaded('user') ? $this->whenLoaded('user') : null;
+        $participants = $this->relationLoaded('participants') ? $this->whenLoaded('participants') : null;
+
+        return [
+            'id'=>$this->id,
+            'name' => $this->name,
+            'type_id' => $this->type_id,
+            $this->mergeWhen($type, fn() => [
+                'type' => $type->name,
+            ]),
+            'user_created' => $this->user_created,
+            $this->mergeWhen($user, fn() => [
+                'name' => $user->name,
+                'surname' => $user->surname,
+                'email' => $user->email,
+            ]),
+            $this->mergeWhen($participants, fn() => [
+                'participants' => ParticipantsResource::collection($participants->load('user')),
+            ]),
+            'status'=>$this->status
+        ];
     }
 }

@@ -28,14 +28,14 @@ class ConversationsService
             ? $conversations->paginate($withPagination['perPage'], page: $withPagination['page'])
             : $conversations->get();
 
-        $conversations = ConversationsResource::collection($conversations->load('type'));
+        $conversations = ConversationsResource::collection($conversations->load('type', 'user'));
 
         return $this->successResponse('Lectura exitosa.', $conversations);
     }
 
     public function listConversation($id)
     {
-        $conversations = Conversations::activeForID($id)->first()->load('type');
+        $conversations = Conversations::activeForID($id)->first()->load('type', 'user', 'participants');
 
         $conversations = ConversationsResource::make($conversations);
 

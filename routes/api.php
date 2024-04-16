@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ConversationsController;
+use App\Http\Controllers\ParticipantsController;
 use App\Http\Controllers\UsersController;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Route;
@@ -38,6 +39,12 @@ Route::prefix('v1')->middleware('auth')->group(function () {
         Route::post('', [ConversationsController::class, 'store']);
         Route::patch('{id}', [ConversationsController::class, 'updateName']);
         Route::delete('{id}', [ConversationsController::class, 'delete']);
+    });
+
+    Route::group(['prefix' => 'participants'], function () {
+        // Route::get('', [ParticipantsController::class, 'list']);
+        Route::post('', [ParticipantsController::class, 'store']);
+        Route::delete('{id}', [ParticipantsController::class, 'delete']);
     });
 });
 
