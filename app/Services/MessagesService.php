@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Events\NotificationSendEvent;
 use App\Http\Resources\MessagesResource;
 use App\Models\Messages;
 use App\Models\MessageView;
@@ -58,17 +59,20 @@ class MessagesService
 
             # Se crea un detalle del mensaje donde les llega a los participantes del chat
             $dataParticipant = [];
-            $participants = Participants::where('conversation_id', $message->conversation_id)->where('user_id', '<>', $this->userJwt->id)->active()->pluck('id');
+            $participants = Participants::where('conversation_id', $message->conversation_id)->where('user_id', '<>', $this->userJwt->id)->active()->get();
             foreach ($participants as $participant) {
                 $dataParticipant[] = [
                     'message_id' => $message->id,
-                    'participant_id' => $participant,
+                    'participant_id' => $participant->id,
                     'date_send' => date('Y-m-d H:i:s'),
                     'created_at' => $message->created_at,
                     'updated_at' => $message->updated_at
                 ];
             }
             MessageView::insert($dataParticipant);
+
+            # Envío de notificación
+            $this->sendNotification($message, $participants);
 
             DB::commit();
             return $this->successResponse('Mensaje enviado correctamente.');
@@ -130,5 +134,26 @@ class MessagesService
         if (!$participant) return $this->errorResponse('No perteneces al chat', 400);
 
         return $this->successResponse('OK');
+    }
+
+    private function sendNotification($message, $participants)
+    {
+        try {
+            $title = $this->userJwt->name . " " . $this->userJwt->surname;
+            $content = $message->type_content_id == 1 ? $message->content : null;
+
+            $count = MessageView::whereHas('message', fn ($query) => $query->where('conversation_id', $message->conversation_id))
+                ->whereHas('participant', fn ($query) => $query->where('user_id', JWTAuth::user()->id))
+                ->where('date_seen', null)->active()->count();
+
+            foreach ($participants as $participant) {
+                event(new NotificationSendEvent($participant->user_id, $title, $content, $message->type_content_id, $count));
+            }
+
+            return $this->successResponse('Notificación enviada correctamente.');
+        } catch (\Throwable $th) {
+            return $this->externalError('durante el envío de notificación.', $th->getMessage());
+        }
+
     }
 }

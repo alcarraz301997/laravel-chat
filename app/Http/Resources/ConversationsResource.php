@@ -2,8 +2,10 @@
 
 namespace App\Http\Resources;
 
+use App\Models\MessageView;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Tymon\JWTAuth\Facades\JWTAuth;
 
 class ConversationsResource extends JsonResource
 {
@@ -20,7 +22,7 @@ class ConversationsResource extends JsonResource
 
         return [
             'id'=>$this->id,
-            'name' => $this->name,
+            'name' => $this->type_id == 2 ? $this->name : $this->user->name . " " . $this->user->surname,
             'type_id' => $this->type_id,
             $this->mergeWhen($type, fn() => [
                 'type' => $type->name,
@@ -34,7 +36,16 @@ class ConversationsResource extends JsonResource
             $this->mergeWhen($participants, fn() => [
                 'participants' => ParticipantsResource::collection($participants->load('user')),
             ]),
+            'not_view' => $this->countNotView($this->id),
             'status'=>$this->status
         ];
+    }
+
+    public function countNotView($conversation_id)
+    {
+        return MessageView::whereHas('message', fn ($query) => $query->where('conversation_id', $conversation_id))
+            ->whereHas('participant', fn ($query) => $query->where('user_id', JWTAuth::user()->id))
+            ->where('date_seen', null)->active()->count();
+
     }
 }

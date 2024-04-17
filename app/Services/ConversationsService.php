@@ -134,6 +134,19 @@ class ConversationsService
         }
     }
 
+    // public function countNotView()
+    // {
+    //     $conversations = Conversations::conversationFilters();
+
+    //     $conversations = !empty($withPagination)
+    //         ? $conversations->paginate($withPagination['perPage'], page: $withPagination['page'])
+    //         : $conversations->get();
+
+    //     $conversations = ConversationsResource::collection($conversations->load('type', 'user'));
+
+    //     return $this->successResponse('Lectura exitosa.', $conversations);
+    // }
+
     public function messageView($id)
     {
         DB::beginTransaction();
@@ -141,7 +154,7 @@ class ConversationsService
             $validate = $this->verifyConversations($id);
             if (!$validate->original['status']) return $validate;
 
-            $messageView = MessageView::whereHas('message.conversation', fn ($query) => $query->where('id', $id))
+            $messageView = MessageView::whereHas('message', fn ($query) => $query->where('conversation_id', $id))
                 ->whereHas('participant', fn ($query) => $query->where('user_id', JWTAuth::user()->id))
                 ->active()->update(['date_seen' => date('Y-m-d H:i:s')]);
 
