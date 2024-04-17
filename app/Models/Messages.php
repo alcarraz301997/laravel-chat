@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Messages extends Model
@@ -41,6 +42,11 @@ class Messages extends Model
     public function contentType(): HasOne
     {
         return $this->hasOne(ContentTypes::class, 'id', 'type_content_id');
+    }
+
+    public function messageView(): HasMany
+    {
+        return $this->hasMany(MessageView::class, 'message_id', 'id')->active();
     }
 
     # Query scopes

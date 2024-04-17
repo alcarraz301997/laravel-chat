@@ -38,6 +38,7 @@ Route::prefix('v1')->middleware('auth')->group(function () {
         Route::get('', [ConversationsController::class, 'list']);
         Route::get('{id}', [ConversationsController::class, 'listConversation']);
         Route::post('', [ConversationsController::class, 'store']);
+        Route::post('view/{id}', [ConversationsController::class, 'messageView']);
         Route::patch('{id}', [ConversationsController::class, 'updateName']);
         Route::delete('{id}', [ConversationsController::class, 'delete']);
     });

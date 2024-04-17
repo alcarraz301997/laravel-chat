@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Http\Resources\MessagesResource;
 use App\Models\Messages;
+use App\Models\MessageView;
 use App\Models\Participants;
 use App\Traits\HasResponse;
 use Illuminate\Support\Facades\DB;
@@ -28,7 +29,7 @@ class MessagesService
             ? $messages->paginate($withPagination['perPage'], page: $withPagination['page'])
             : $messages->get();
 
-        $messages = MessagesResource::collection($messages->load('conversation', 'user', 'contentType'));
+        $messages = MessagesResource::collection($messages->load('conversation', 'user', 'contentType', 'messageView'));
 
         return $this->successResponse('Lectura exitosa.', $messages);
     }
@@ -54,6 +55,20 @@ class MessagesService
 
             $message = Messages::create($params);
             $message->fresh();
+
+            # Se crea un detalle del mensaje donde les llega a los participantes del chat
+            $dataParticipant = [];
+            $participants = Participants::where('conversation_id', $message->conversation_id)->where('user_id', '<>', $this->userJwt->id)->active()->pluck('id');
+            foreach ($participants as $participant) {
+                $dataParticipant[] = [
+                    'message_id' => $message->id,
+                    'participant_id' => $participant,
+                    'date_send' => date('Y-m-d H:i:s'),
+                    'created_at' => $message->created_at,
+                    'updated_at' => $message->updated_at
+                ];
+            }
+            MessageView::insert($dataParticipant);
 
             DB::commit();
             return $this->successResponse('Mensaje enviado correctamente.');
@@ -93,7 +108,7 @@ class MessagesService
         $validateParticipant = $this->validateParticipant($message->conversation_id);
         if (!$validateParticipant->original['status']) return $validateParticipant;
 
-        return $this->successResponse('OK');
+        return $this->successResponse('OK', $message);
     }
 
     private function getMime($mime, $route)

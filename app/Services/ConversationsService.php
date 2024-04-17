@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Http\Resources\ConversationsResource;
 use App\Models\Conversations;
+use App\Models\MessageView;
 use App\Models\Participants;
 use App\Models\User;
 use App\Traits\HasResponse;
@@ -130,6 +131,25 @@ class ConversationsService
         } catch (\Throwable $th) {
             DB::rollBack();
             return $this->externalError('durante la eliminación de tu usuario.', $th->getMessage());
+        }
+    }
+
+    public function messageView($id)
+    {
+        DB::beginTransaction();
+        try {
+            $validate = $this->verifyConversations($id);
+            if (!$validate->original['status']) return $validate;
+
+            $messageView = MessageView::whereHas('message.conversation', fn ($query) => $query->where('id', $id))
+                ->whereHas('participant', fn ($query) => $query->where('user_id', JWTAuth::user()->id))
+                ->active()->update(['date_seen' => date('Y-m-d H:i:s')]);
+
+            DB::commit();
+            return $this->successResponse('Mensaje marcado como visto satisfactoriamente.');
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            return $this->externalError('durante la visualización de mensajes.', $th->getMessage());
         }
     }
 

@@ -30,7 +30,6 @@ class ParticipantsResource extends JsonResource
                 'name' => $user->name,
                 'surname' => $user->surname,
                 'email' => $user->email,
-                'email' => $user->email,
                 'address' => $user->address,
                 'phone' => $user->phone,
                 'birthday' => $user->birthday,

@@ -44,4 +44,9 @@ class ConversationsController extends Controller
     {
         return $this->conversationsService->delete($id);
     }
+
+    public function messageView($id)
+    {
+        return $this->conversationsService->messageView($id);
+    }
 }
