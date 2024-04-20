@@ -1,0 +1,87 @@
+version: '3.8'
+
+services:
+  nginx:
+    image: nginx:alpine
+    container_name: ${PROJECT_NAME}_nginx
+    restart: always
+    volumes:
+      - ${PROJECT_ROUTE}:${SERVER_ROUTE}
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
+    ports:
+      - ${PROJECT_PORT}:80
+    networks:
+      chat_network:
+        aliases:
+          - ${PROJECT_NAME}_nginx_host
+
+  php:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ${PROJECT_NAME}_php
+    restart: always
+    volumes:
+      - ${PROJECT_ROUTE}:${SERVER_ROUTE}
+    networks:
+      chat_network:
+        aliases:
+          - ${PROJECT_NAME}_php_host
+
+  laravel_websockets:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ${PROJECT_NAME}_websockets
+    restart: always
+    command: php artisan websockets:serve --port=6001
+    volumes:
+      - ${PROJECT_ROUTE}:${SERVER_ROUTE}
+    ports:
+    - 6001:6001
+    networks:
+      chat_network:
+        aliases:
+          - ${PROJECT_NAME}_websockets_host
+
+  mysql:
+    image: mysql:latest
+    container_name: ${PROJECT_NAME}_mysql
+    restart: always
+    environment:
+      MYSQL_DATABASE: ${DB_DATABASE}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - ${DB_PORT}:3306
+    volumes:
+      - mysql-data:/var/lib/mysql
+    networks:
+      chat_network:
+        aliases:
+          - ${PROJECT_NAME}_mysql_host
+
+
+  phpmyadmin:
+    image: phpmyadmin:latest
+    container_name: ${PROJECT_NAME}_pma
+    restart: always
+    ports:
+      - ${PMA_PORT}:80
+    environment:
+      PMA_ARBITRARY: 1
+      PMA_HOST: mysql
+      PMA_USER: root
+      PMA_PASSWORD: ${DB_PASSWORD}
+    networks:
+      chat_network:
+        aliases:
+          - ${PROJECT_NAME}_pma_host
+
+networks:
+  chat_network:
+    name: chat_net
+    driver: bridge
+
+volumes:
+  mysql-data:
