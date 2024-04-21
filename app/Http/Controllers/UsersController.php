@@ -6,7 +6,6 @@ use App\Http\Requests\UsersImageRequest;
 use App\Http\Requests\UsersRequest;
 use App\Services\UsersService;
 use App\Traits\HasResponse;
-use Illuminate\Http\Request;
 
 class UsersController extends Controller
 {
@@ -18,12 +17,6 @@ class UsersController extends Controller
     public function __construct(UsersService $usersService)
     {
         $this->usersService = $usersService;
-    }
-
-    public function list(Request $request)
-    {
-        $withPagination = $this->validatePagination($request->only('perPage', 'page'));
-        return $this->usersService->list($withPagination);
     }
 
     public function store(UsersRequest $request)

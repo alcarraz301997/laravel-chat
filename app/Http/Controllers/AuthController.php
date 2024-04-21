@@ -26,15 +26,14 @@ class AuthController extends Controller
             $credentials = request(['email', 'password']);
 
             $token = JWTAuth::attempt($credentials);
-            if (!$token) return $this->errorResponse('Credenciales inválidas', 401);
+            if (!$token) return $this->errorResponse('Credenciales inválidas.', 401);
 
             $user = JWTAuth::user();
-            if($user->status != 1) return $this->successResponse('Tu cuenta se encuentra inactiva', 401);
+            if($user->status != 1) return $this->errorResponse('Tu cuenta se encuentra inactiva.', 403);
 
-            return $this->successResponse('OK', $this->respondWithToken($token, $user));
+            return $this->successResponse('Bienvenido.', $this->respondWithToken($token, $user));
         } catch (\Throwable $th) {
             return $this->externalError('durante el login.', $th->getMessage());
-            throw $th;
         }
     }
 
@@ -57,9 +56,10 @@ class AuthController extends Controller
         try {
             return $this->successResponse('OK', UsersResource::make(JWTAuth::user()));
         } catch (\Throwable $th) {
-            throw $th;
+            return $this->externalError('durante la obtención de datos de tu usuario.', $th->getMessage());
         }
     }
+
     public function logout()
     {
         try {
@@ -67,7 +67,7 @@ class AuthController extends Controller
             JWTAuth::invalidate($token);
             return $this->successResponse('OK', 'Sesión cerrada con éxito');
         } catch (\Throwable $th) {
-            throw $th;
+            return $this->externalError('al cerrar sesión.', $th->getMessage());
         }
     }
 
@@ -82,7 +82,7 @@ class AuthController extends Controller
             ];
             return $this->successResponse('OK', $token_refresh);
         } catch (\Throwable $th) {
-            throw $th;
+            return $this->externalError('al refrescar el token.', $th->getMessage());
         }
     }
 }

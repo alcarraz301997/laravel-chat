@@ -23,24 +23,34 @@ class ConversationsService
 
     public function list($withPagination)
     {
-        $conversations = Conversations::conversationFilters();
+        try {
+            $conversations = Conversations::conversationFilters();
 
-        $conversations = !empty($withPagination)
-            ? $conversations->paginate($withPagination['perPage'], page: $withPagination['page'])
-            : $conversations->get();
+            $conversations = !empty($withPagination)
+                ? $conversations->paginate($withPagination['perPage'], page: $withPagination['page'])
+                : $conversations->get();
 
-        $conversations = ConversationsResource::collection($conversations->load('type', 'user'));
+            $conversations = ConversationsResource::collection($conversations->load('type', 'user'));
 
-        return $this->successResponse('Lectura exitosa.', $conversations);
+            return $this->successResponse('Lectura exitosa.', $conversations);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            return $this->externalError('durante la visualización de chats.', $th->getMessage());
+        }
     }
 
     public function listConversation($id)
     {
-        $conversations = Conversations::activeForID($id)->first()->load('type', 'user', 'participants');
+        try {
+            $conversations = Conversations::activeForID($id)->first()->load('type', 'user', 'participants');
 
-        $conversations = ConversationsResource::make($conversations);
+            $conversations = ConversationsResource::make($conversations);
 
-        return $this->successResponse('Lectura exitosa.', $conversations);
+            return $this->successResponse('Lectura exitosa.', $conversations);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            return $this->externalError('durante la visualización del chat seleccionado.', $th->getMessage());
+        }
     }
 
     public function store($params)
@@ -59,7 +69,7 @@ class ConversationsService
                 $message = 'chat';
             } else {
                 $participants = $params['users_id'];
-                if (in_array($this->userJwt->id, $participants)) return $this->errorResponse('No debes volver a seleccionarte.', 400);
+                if (in_array($this->userJwt->id, $participants)) return $this->errorResponse('No debes volver a elegirte.', 409);
 
                 $participants[] = $this->userJwt->id;
 
@@ -130,7 +140,7 @@ class ConversationsService
             return $this->successResponse('Eliminaste el chat.');
         } catch (\Throwable $th) {
             DB::rollBack();
-            return $this->externalError('durante la eliminación de tu usuario.', $th->getMessage());
+            return $this->externalError('durante la eliminación del chat.', $th->getMessage());
         }
     }
 
@@ -169,12 +179,12 @@ class ConversationsService
     private function verifyConversations($id, $name = null)
     {
         $conversation = Conversations::activeForID($id)->first();
-        if (!$conversation) return $this->errorResponse('El chat no está disponible', 400);
+        if (!$conversation) return $this->errorResponse('El chat seleccionado no está disponible.', 400);
 
         $participants = Participants::participant($conversation->id, $this->userJwt->id)->active()->first();
         if (!$participants) return $this->errorResponse('No tienes acceso a este chat', 400);
 
-        if(isset($name) && $conversation->type_id == '1') return $this->errorResponse('Este chat no es grupo para cambiar de nombre.', 400);
+        if(isset($name) && $conversation->type_id == '1') return $this->errorResponse('Este chat no es grupo para cambiar de nombre.', 403);
 
         return $this->successResponse('OK');
     }

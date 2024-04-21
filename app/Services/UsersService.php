@@ -21,15 +21,20 @@ class UsersService
 
     public function list($withPagination)
     {
-        $users = User::userFilters();
+        try {
+            $users = User::userFilters();
 
-        $users = !empty($withPagination)
-            ? $users->paginate($withPagination['perPage'], page: $withPagination['page'])
-            : $users->get();
+            $users = !empty($withPagination)
+                ? $users->paginate($withPagination['perPage'], page: $withPagination['page'])
+                : $users->get();
 
-        $users = UsersResource::collection($users);
+            $users = UsersResource::collection($users);
 
-        return $this->successResponse('Lectura exitosa.', $users);
+            return $this->successResponse('Lectura exitosa.', $users);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            return $this->externalError('durante la visualización de usuarios.', $th->getMessage());
+        }
     }
 
     public function store($params)
@@ -37,7 +42,7 @@ class UsersService
         DB::beginTransaction();
         try {
             $validateEmail = User::email($params['email'])->active()->first();
-            if($validateEmail) return $this->errorResponse('El correo ya se encuentra registrado', 400);
+            if($validateEmail) return $this->errorResponse('El correo ya se encuentra registrado.', 409);
 
             $params['img_profile'] = 'public/profile/default/user.png';
 
@@ -66,7 +71,7 @@ class UsersService
             return $this->successResponse('Tus datos fueron actualizados correctamente.', $user);
         } catch (\Throwable $th) {
             DB::rollBack();
-            return $this->externalError('durante la actualización del usuario.', $th->getMessage());
+            return $this->externalError('durante la actualización de tus datos.', $th->getMessage());
         }
     }
 
@@ -109,7 +114,7 @@ class UsersService
             $user->update(['img_profile' => $img_profile]);
 
             DB::commit();
-            return $this->successResponse('Foto de perfil actualizada satisfactoriamente.', $user);
+            return $this->successResponse('Foto de perfil actualizada satisfactoriamente.');
         } catch (\Throwable $th) {
             if (isset($img_profile) && Storage::exists($img_profile)) {
                 Storage::delete($img_profile);
@@ -123,11 +128,11 @@ class UsersService
     private function verifyUser($id, $email = null)
     {
         $user = User::activeForID($id)->first();
-        if (!$user) return $this->errorResponse('Tu usuario no está disponible', 400);
+        if (!$user) return $this->errorResponse('Tu usuario no está disponible.', 409);
 
         if(isset($email)){
             $validateEmail = User::email($email, $id)->active()->first();
-            if ($validateEmail) return $this->errorResponse('El correo ya se encuentra registrado.', 400);
+            if ($validateEmail) return $this->errorResponse('El correo ya se encuentra registrado.', 409);
         }
 
         return $this->successResponse('OK');

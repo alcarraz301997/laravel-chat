@@ -29,9 +29,9 @@ trait HasResponse
     # Estructura para mensaje de error en operaciones try - catch
     public function externalError($message, $errors = null)
     {
-        $structure = $this->defaultStructure(500, 'Ocurrió un problema '.$message, $errors, false);
+        $structure = $this->defaultStructure(400, 'Ocurrió un problema '.$message, $errors, false);
 
-        return response()->json($structure, 500);
+        return response()->json($structure, 400);
     }
 
     # Estructura por defecto para los mensajes

@@ -1,0 +1,1192 @@
+{
+    "openapi": "3.0.3",
+    "info": {
+      "title": "LARAVEL CHAT",
+      "description": "Es una aplicación para enviar/recibir mensajes. Hecho en Laravel usando Websockets y Pusher.\n\n<b>CONSTRUIR, CONFIGURAR Y EJECUTAR USANDO DOCKER</b>\n\nIr al directorio:\n\n- cd /docker\n\nluego construye el contenedor de Docker php8.1 y nginx:\n\n- sudo docker-compose build\n\nLuego, levanta el contenedor y ejecútelo:\n\n- sudo docker-compose up -d\n\nNo olvides que debes hacer una copia del .env.example y renombrarlo como .env, modificar algunas variables según tu entorno\n\nSi vas a utilizar los comandos de laravel en Docker, debes ingresar a su terminal:\n\n- sudo docker exec -it laravel-chat_php sh\n<br>\n<br>\n\n<b>EJECUTAR EL PORYECTO LARAVEL</b>\n\nAntes de iniciar el servicio debes de instalar composer en la aplicación y este procesará los archivos necesarios para cargar Laravel v.8.1 en el navegador web.\n\n- composer install\n\nPara ejecutar todas sus migraciones pendientes, ejecute el comando  <b>artisan migrate </b>:\n\n- php artisan migrate\n\nPuede ejecutar el comando <b>artisan db:seed</b> para inicializar su base de datos. De forma predeterminada, el comando db:seed ejecuta la clase  <b>Database\\Seeders\\DatabaseSeeder </b>, que a su vez puede invocar otras clases semilla. Sin embargo, puede usar la opción --class para especificar una clase de sembradora específica para ejecutarla individualmente:\n\n- php artisan db:seed\n\nMás comandos\n\nActualice la base de datos y ejecute todas las semillas de la base de datos:\n\n- php artisan migrate:fresh --seed",
+      "contact": {
+        "email": "guillermo.junior.30@gmail.com"
+      },
+      "version": "1.0.0"
+    },
+    "servers": [
+      {
+        "url": "http://localhost:8000/v1"
+      }
+    ],
+    "tags": [
+      {
+        "name": "Autenticacion",
+        "description": "Operaciones de Autenticacion"
+      },
+      {
+        "name": "Usuarios",
+        "description": "Operationes de Usuario"
+      },
+      {
+        "name": "Chat",
+        "description": "Operaciones de chats y grupos"
+      },
+      {
+        "name": "Participantes",
+        "description": "Operaciones de participantes de chats"
+      },
+      {
+        "name": "Mensajes",
+        "description": "Operaciones de mensajes de chats"
+      }
+    ],
+    "paths": {
+      "/auth/login": {
+        "post": {
+          "tags": [
+            "Autenticacion"
+          ],
+          "summary": "Loguearse a la aplicación",
+          "operationId": "loginUser",
+          "requestBody": {
+            "description": "Enviar datos correo y contraseña",
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "password": {
+                      "type": "string"
+                    },
+                    "email": {
+                      "type": "string",
+                      "format": "email"
+                    }
+                  },
+                  "example": {
+                    "email": "junior@gmail.com",
+                    "password": "Alcarraz30."
+                  }
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "Te registraste correctamente."
+            },
+            "400": {
+              "description": "Ocurrió un problema durante el login."
+            },
+            "401": {
+              "description": "Credenciales inválidas."
+            },
+            "403": {
+              "description": "Tu cuenta se encuentra inactiva."
+            }
+          }
+        }
+      },
+      "/auth/me": {
+        "get": {
+          "tags": [
+            "Autenticacion"
+          ],
+          "summary": "Lista datos de mi usuario",
+          "operationId": "getMe",
+          "responses": {
+            "200": {
+              "description": "OK"
+            },
+            "400": {
+              "description": "Ocurrió un problema durante la obtención de datos de tu usuario."
+            }
+          },
+          "security": [
+            {
+              "bearerAuth": []
+            }
+          ]
+        }
+      },
+      "/auth/logout": {
+        "post": {
+          "tags": [
+            "Autenticacion"
+          ],
+          "summary": "Cerrar sesión",
+          "operationId": "postLogout",
+          "responses": {
+            "200": {
+              "description": "OK"
+            },
+            "400": {
+              "description": "Ocurrió un problema al cerrar sesión."
+            }
+          },
+          "security": [
+            {
+              "bearerAuth": []
+            }
+          ]
+        }
+      },
+      "/auth/refresh": {
+        "get": {
+          "tags": [
+            "Autenticacion"
+          ],
+          "summary": "Refresca el token de tu usuario",
+          "operationId": "postRefresh",
+          "responses": {
+            "200": {
+              "description": "OK"
+            },
+            "400": {
+              "description": "Ocurrió un problema al refrescar el token."
+            }
+          },
+          "security": [
+            {
+              "bearerAuth": []
+            }
+          ]
+        }
+      },
+      "/user": {
+        "get": {
+          "tags": [
+            "Usuarios"
+          ],
+          "summary": "Listado de todos los usuarios",
+          "operationId": "getUser",
+          "parameters": [
+            {
+              "name": "search",
+              "in": "query",
+              "description": "Búsqueda por nombre o apellido",
+              "required": false,
+              "schema": {
+                "type": "string"
+              }
+            },
+            {
+              "name": "name",
+              "in": "query",
+              "description": "Filtrar por nombre",
+              "required": false,
+              "schema": {
+                "type": "string"
+              }
+            },
+            {
+              "name": "surname",
+              "in": "query",
+              "description": "Filtrar por apellido",
+              "required": false,
+              "schema": {
+                "type": "string"
+              }
+            },
+            {
+              "name": "email",
+              "in": "query",
+              "description": "Filtrar por email",
+              "required": false,
+              "schema": {
+                "type": "string",
+                "format": "email"
+              }
+            },
+            {
+              "name": "status",
+              "in": "query",
+              "description": "Filtrar por estado",
+              "required": false,
+              "schema": {
+                "type": "string"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Lectura exitosa."
+            },
+            "400": {
+              "description": "Ocurrió un problema durante la visualización de usuarios."
+            }
+          },
+          "security": [
+            {
+              "bearerAuth": []
+            }
+          ]
+        },
+        "post": {
+          "tags": [
+            "Usuarios"
+          ],
+          "summary": "Crear tu usuario",
+          "operationId": "postUser",
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    },
+                    "surname": {
+                      "type": "string"
+                    },
+                    "password": {
+                      "type": "string"
+                    },
+                    "email": {
+                      "type": "string",
+                      "format": "email"
+                    },
+                    "address": {
+                      "type": "string"
+                    },
+                    "phone": {
+                      "type": "string"
+                    },
+                    "birthday": {
+                      "type": "string",
+                      "format": "date"
+                    }
+                  },
+                  "example": {
+                    "name": "Alexander",
+                    "surname": "Ramirez Montes",
+                    "password": "Alexander02.",
+                    "email": "alexander@correo.com",
+                    "address": "Av Lima",
+                    "phone": "921452365",
+                    "birthday": "1997-05-02"
+                  }
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "Te registraste correctamente."
+            },
+            "400": {
+              "description": "Ocurrió un problema durante la creación de tu usuario."
+            },
+            "409": {
+              "description": "El correo ya se encuentra registrado."
+            }
+          }
+        },
+        "patch": {
+          "tags": [
+            "Usuarios"
+          ],
+          "summary": "Editar tus datos de usuario",
+          "operationId": "patchUser",
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    },
+                    "surname": {
+                      "type": "string"
+                    },
+                    "email": {
+                      "type": "string",
+                      "format": "email"
+                    },
+                    "address": {
+                      "type": "string"
+                    },
+                    "phone": {
+                      "type": "string"
+                    },
+                    "birthday": {
+                      "type": "string",
+                      "format": "date"
+                    }
+                  },
+                  "example": {
+                    "name": "Alexander",
+                    "surname": "Ramirez Montes",
+                    "email": "alexander@correo.com",
+                    "address": "Av Lima",
+                    "phone": "921452365",
+                    "birthday": "1997-05-02"
+                  }
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "Tus datos fueron actualizados correctamente."
+            },
+            "400": {
+              "description": "Ocurrió un problema durante la actualización de tus datos."
+            },
+            "409": {
+              "description": "Tu usuario no está disponible."
+            }
+          },
+          "security": [
+            {
+              "bearerAuth": []
+            }
+          ]
+        },
+        "delete": {
+          "tags": [
+            "Usuarios"
+          ],
+          "summary": "Eliminar tu usuario",
+          "description": "Despues de hacerlo no podrás realizar mas consumo de APIs",
+          "operationId": "deleteUser",
+          "responses": {
+            "200": {
+              "description": "Eliminaste tu usuario satisfactoriamente."
+            },
+            "400": {
+              "description": "Ocurrió un problema durante la eliminación de tu usuario."
+            },
+            "409": {
+              "description": "Tu usuario no está disponible."
+            }
+          },
+          "security": [
+            {
+              "bearerAuth": []
+            }
+          ]
+        }
+      },
+      "/user/img": {
+        "post": {
+          "tags": [
+            "Usuarios"
+          ],
+          "summary": "Cambiar foto de perfil",
+          "description": "Debes de subir un archivo de tipo imagen",
+          "operationId": "postImg",
+          "requestBody": {
+            "content": {
+              "multipart/form-data": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "img_profile": {
+                      "description": "Imagen de perfil a actualizar",
+                      "type": "string",
+                      "format": "binary"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "Foto de perfil actualizada satisfactoriamente."
+            },
+            "400": {
+              "description": "Ocurrió un problema durante la actualización de tu foto de perfil."
+            },
+            "409": {
+              "description": "Tu usuario no está disponible."
+            }
+          },
+          "security": [
+            {
+              "bearerAuth": []
+            }
+          ]
+        }
+      },
+      "/conversations": {
+        "get": {
+          "tags": [
+            "Chat"
+          ],
+          "summary": "Lista las conversaciones del usuario logueado",
+          "operationId": "getConversation",
+          "parameters": [
+            {
+              "name": "search",
+              "in": "query",
+              "description": "Búsqueda por nombre del grupo o chat",
+              "required": false,
+              "schema": {
+                "type": "string"
+              }
+            },
+            {
+              "name": "type_id",
+              "in": "query",
+              "description": "Filtrar por tipo: chat/grupo",
+              "required": false,
+              "schema": {
+                "type": "integer"
+              }
+            },
+            {
+              "name": "status",
+              "in": "query",
+              "description": "Filtrar por estado",
+              "required": false,
+              "schema": {
+                "type": "string"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "OK"
+            },
+            "400": {
+              "description": "Ocurrió un problema durante la visualización de chats."
+            }
+          },
+          "security": [
+            {
+              "bearerAuth": []
+            }
+          ]
+        },
+        "post": {
+          "tags": [
+            "Chat"
+          ],
+          "summary": "Crear un chat/grupo",
+          "description": "Si mandas el type_id 1 creas un chat, y si es el 2 es un grupo",
+          "operationId": "postConversation",
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    },
+                    "type_id": {
+                      "type": "integer"
+                    },
+                    "user_id": {
+                      "type": "integer"
+                    },
+                    "users_id": {
+                      "type": "string"
+                    }
+                  },
+                  "example": {
+                    "name": "",
+                    "type_id": 1,
+                    "user_id": 1
+                  }
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "Creaste correctamente un chat."
+            },
+            "400": {
+              "description": "Ocurrió un problema durante la creación de un chat."
+            },
+            "409": {
+              "description": "No debes volver a elegirte."
+            }
+          },
+          "security": [
+            {
+              "bearerAuth": []
+            }
+          ]
+        }
+      },
+      "/conversations/{id}": {
+        "get": {
+          "tags": [
+            "Chat"
+          ],
+          "summary": "Lista las conversaciones del usuario logueado",
+          "operationId": "getConversationId",
+          "parameters": [
+            {
+              "name": "id",
+              "in": "path",
+              "description": "Se manda el id de la conversacion a ver",
+              "required": true,
+              "schema": {
+                "type": "integer"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "OK"
+            },
+            "400": {
+              "description": "Ocurrió un problema durante la visualización del chat seleccionado."
+            }
+          },
+          "security": [
+            {
+              "bearerAuth": []
+            }
+          ]
+        },
+        "patch": {
+          "tags": [
+            "Chat"
+          ],
+          "summary": "Cambiar el nombre del grupo",
+          "operationId": "patchConversation",
+          "parameters": [
+            {
+              "name": "id",
+              "in": "path",
+              "description": "Se manda el id de la conversacion a editar",
+              "required": true,
+              "schema": {
+                "type": "integer"
+              }
+            }
+          ],
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    }
+                  },
+                  "example": {
+                    "name": "Grupo"
+                  }
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "El nombre del grupo fue actualizado correctamente."
+            },
+            "400": {
+              "description": "Ocurrió un problema durante la actualización del nombre del grupo."
+            },
+            "403": {
+              "description": "Este chat no es grupo para cambiar de nombre."
+            },
+            "409": {
+              "description": "El chat seleccionado no está disponible."
+            }
+          },
+          "security": [
+            {
+              "bearerAuth": []
+            }
+          ]
+        },
+        "delete": {
+          "tags": [
+            "Chat"
+          ],
+          "summary": "Eliminar un chat/grupo",
+          "operationId": "deleteConversation",
+          "parameters": [
+            {
+              "name": "id",
+              "in": "path",
+              "description": "Se manda el id de la conversacion a editar",
+              "required": true,
+              "schema": {
+                "type": "integer"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Eliminaste el chat."
+            },
+            "400": {
+              "description": "Ocurrió un problema durante la eliminación del chat."
+            },
+            "409": {
+              "description": "El chat seleccionado no está disponible."
+            }
+          },
+          "security": [
+            {
+              "bearerAuth": []
+            }
+          ]
+        }
+      },
+      "/conversations/view/{id}": {
+        "patch": {
+          "tags": [
+            "Chat"
+          ],
+          "summary": "Registra como visualizado un chat",
+          "operationId": "patchConversationView",
+          "parameters": [
+            {
+              "name": "id",
+              "in": "path",
+              "description": "Se manda el id de la conversacion a marcar el visto",
+              "required": true,
+              "schema": {
+                "type": "integer"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Mensaje marcado como visto satisfactoriamente."
+            },
+            "400": {
+              "description": "Ocurrió un problema durante la visualización de mensajes."
+            },
+            "409": {
+              "description": "El chat seleccionado no está disponible."
+            }
+          },
+          "security": [
+            {
+              "bearerAuth": []
+            }
+          ]
+        }
+      },
+      "/participants": {
+        "post": {
+          "tags": [
+            "Participantes"
+          ],
+          "summary": "Agregar un participante a un chat",
+          "operationId": "postParticipant",
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "conversation_id": {
+                      "type": "integer"
+                    },
+                    "user_id": {
+                      "type": "integer"
+                    }
+                  },
+                  "example": {
+                    "conversation_id": 2,
+                    "user_id": 3
+                  }
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "Agregado al grupo correctamente."
+            },
+            "400": {
+              "description": "Ocurrió un problema durante la incorporación al grupo."
+            },
+            "403": {
+              "description": "El chat no es grupo para agregar personas."
+            }
+          },
+          "security": [
+            {
+              "bearerAuth": []
+            }
+          ]
+        }
+      },
+      "/participants/{id}": {
+        "delete": {
+          "tags": [
+            "Participantes"
+          ],
+          "summary": "Eliminar un participantes del grupo",
+          "operationId": "deleteParticipant",
+          "parameters": [
+            {
+              "name": "id",
+              "in": "path",
+              "description": "Se manda el id del grupo",
+              "required": true,
+              "schema": {
+                "type": "integer"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Eliminaste a un miembro del grupo."
+            },
+            "400": {
+              "description": "Ocurrió un problema durante la eliminación de un miembro."
+            },
+            "403": {
+              "description": "El chat no es grupo."
+            }
+          },
+          "security": [
+            {
+              "bearerAuth": []
+            }
+          ]
+        }
+      },
+      "/messages": {
+        "post": {
+          "tags": [
+            "Mensajes"
+          ],
+          "summary": "Enviar mensaje",
+          "description": "Depende del type_content_id que mandes puedes mandar un texto, imagen, video, etc",
+          "operationId": "postMessage",
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "conversation_id": {
+                      "type": "integer"
+                    },
+                    "type_content_id": {
+                      "type": "integer"
+                    },
+                    "content": {
+                      "type": "string"
+                    }
+                  },
+                  "example": {
+                    "conversation_id": 1,
+                    "type_content_id": 1,
+                    "content": "Hola"
+                  }
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "Mensaje enviado correctamente."
+            },
+            "400": {
+              "description": "Ocurrió un problema durante el envío del mensaje."
+            },
+            "403": {
+              "description": "No perteneces al chat."
+            }
+          },
+          "security": [
+            {
+              "bearerAuth": []
+            }
+          ]
+        }
+      },
+      "/messages/{id}": {
+        "get": {
+          "tags": [
+            "Mensajes"
+          ],
+          "summary": "Lista las conversaciones del usuario logueado",
+          "operationId": "getMessageId",
+          "parameters": [
+            {
+              "name": "id",
+              "in": "path",
+              "description": "Se manda el id de la conversación del mensaje",
+              "required": true,
+              "schema": {
+                "type": "integer"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Lectura exitosa"
+            },
+            "400": {
+              "description": "Ocurrió un problema durante la visualización de mensajes.'"
+            }
+          },
+          "security": [
+            {
+              "bearerAuth": []
+            }
+          ]
+        },
+        "delete": {
+          "tags": [
+            "Mensajes"
+          ],
+          "summary": "Eliminar un mensaje",
+          "operationId": "deleteMessage",
+          "parameters": [
+            {
+              "name": "id",
+              "in": "path",
+              "description": "Se manda el id del mensaje",
+              "required": true,
+              "schema": {
+                "type": "integer"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Mensaje eliminado satisfactoriamente"
+            },
+            "400": {
+              "description": "Ocurrió un problema durante la eliminación del mensaje.'"
+            },
+            "409": {
+              "description": "El mensaje seleccionado no esta disponible."
+            }
+          },
+          "security": [
+            {
+              "bearerAuth": []
+            }
+          ]
+        }
+      }
+    },
+    "security": [
+      {
+        "bearerAuth": []
+      }
+    ],
+    "components": {
+      "securitySchemes": {
+        "bearerAuth": {
+          "type": "http",
+          "scheme": "bearer",
+          "bearerFormat": "JWT"
+        }
+      },
+      "schemas": {
+        "User": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "integer",
+              "example": [
+                1,
+                2
+              ]
+            },
+            "name": {
+              "type": "string",
+              "example": [
+                "Junior",
+                "Guillermo"
+              ]
+            },
+            "surname": {
+              "type": "string",
+              "example": [
+                "Alcarraz",
+                "Montes"
+              ]
+            },
+            "email": {
+              "type": "string",
+              "example": [
+                "junior@email.com",
+                "guilllermo@email.com"
+              ]
+            },
+            "password": {
+              "type": "string",
+              "example": [
+                "Junior11.",
+                "Guillermo12."
+              ]
+            },
+            "address": {
+              "type": "string",
+              "example": [
+                "Av Lima",
+                "Av Huaral"
+              ]
+            },
+            "phone": {
+              "type": "string",
+              "example": [
+                "985412548",
+                "986514759"
+              ]
+            },
+            "img_profile": {
+              "type": "string",
+              "example": [
+                "public/profile/default/user.png",
+                "public/profile/default/user.png"
+              ]
+            },
+            "status": {
+              "type": "integer",
+              "description": "0: Inactive, 1: Active, 2: Delete",
+              "example": [
+                1,
+                1
+              ]
+            }
+          }
+        },
+        "Content_types": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "integer",
+              "example": [
+                1,
+                2,
+                3
+              ]
+            },
+            "name": {
+              "type": "string",
+              "example": [
+                "Texto",
+                "Imagen/Video",
+                "Archivo"
+              ]
+            },
+            "status": {
+              "type": "integer",
+              "description": "0: Inactive, 1: Active, 2: Delete",
+              "example": [
+                1,
+                1,
+                1
+              ]
+            }
+          }
+        },
+        "Conversations": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "integer",
+              "example": [
+                1,
+                2
+              ]
+            },
+            "name": {
+              "type": "string",
+              "example": [
+                "",
+                "Grupo"
+              ]
+            },
+            "type_id": {
+              "type": "integer",
+              "example": [
+                1,
+                2
+              ]
+            },
+            "status": {
+              "type": "integer",
+              "description": "0: Inactive, 1: Active, 2: Delete",
+              "example": [
+                1,
+                1
+              ]
+            }
+          }
+        },
+        "Participants": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "integer",
+              "example": [
+                1,
+                2,
+                3,
+                4
+              ]
+            },
+            "conversation_id": {
+              "type": "integer",
+              "example": [
+                1,
+                1,
+                2,
+                2
+              ]
+            },
+            "user_id": {
+              "type": "integer",
+              "example": [
+                1,
+                2,
+                1,
+                2
+              ]
+            },
+            "status": {
+              "type": "integer",
+              "description": "0: Inactive, 1: Active, 2: Delete",
+              "example": [
+                1,
+                1,
+                1,
+                1
+              ]
+            }
+          }
+        },
+        "Conversation_types": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "integer",
+              "example": [
+                1,
+                2
+              ]
+            },
+            "name": {
+              "type": "string",
+              "example": [
+                "Chat",
+                "Grupo"
+              ]
+            },
+            "status": {
+              "type": "integer",
+              "description": "0: Inactive, 1: Active, 2: Delete",
+              "example": [
+                1,
+                1
+              ]
+            }
+          }
+        },
+        "Messages": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "integer",
+              "example": [
+                1,
+                2
+              ]
+            },
+            "conversation_id": {
+              "type": "integer",
+              "example": [
+                1,
+                2
+              ]
+            },
+            "user_id": {
+              "type": "integer",
+              "example": [
+                1,
+                2
+              ]
+            },
+            "content": {
+              "type": "string",
+              "example": [
+                "Hola",
+                "Buenos dias"
+              ]
+            },
+            "type_content_id": {
+              "type": "integer",
+              "example": [
+                1,
+                1
+              ]
+            },
+            "status": {
+              "type": "integer",
+              "description": "0: Inactive, 1: Active, 2: Delete",
+              "example": [
+                1,
+                1
+              ]
+            }
+          }
+        },
+        "Message_view": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "integer",
+              "example": [
+                1,
+                2
+              ]
+            },
+            "message_id": {
+              "type": "integer",
+              "example": [
+                1,
+                2
+              ]
+            },
+            "participant_id": {
+              "type": "integer",
+              "example": [
+                2,
+                1
+              ]
+            },
+            "date_send": {
+              "type": "string",
+              "example": [
+                "2024-04-20 17:24:00",
+                "2024-04-21 18:20:00"
+              ]
+            },
+            "date_seen": {
+              "type": "string",
+              "example": [
+                "",
+                "2024-04-21 18:20:00"
+              ]
+            },
+            "status": {
+              "type": "integer",
+              "description": "0: Inactive, 1: Active, 2: Delete",
+              "example": [
+                1,
+                1
+              ]
+            }
+          }
+        }
+      }
+    }
+  }

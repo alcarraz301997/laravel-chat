@@ -24,15 +24,20 @@ class MessagesService
 
     public function list($id, $withPagination)
     {
-        $messages = Messages::where('conversation_id', $id)->messageFilters();
+        try {
+            $messages = Messages::where('conversation_id', $id)->messageFilters();
 
-        $messages = !empty($withPagination)
-            ? $messages->paginate($withPagination['perPage'], page: $withPagination['page'])
-            : $messages->get();
+            $messages = !empty($withPagination)
+                ? $messages->paginate($withPagination['perPage'], page: $withPagination['page'])
+                : $messages->get();
 
-        $messages = MessagesResource::collection($messages->load('conversation', 'user', 'contentType', 'messageView'));
+            $messages = MessagesResource::collection($messages->load('conversation', 'user', 'contentType', 'messageView'));
 
-        return $this->successResponse('Lectura exitosa.', $messages);
+            return $this->successResponse('Lectura exitosa.', $messages);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            return $this->externalError('durante la visualización de mensajes.', $th->getMessage());
+        }
     }
 
     public function store($params)
@@ -107,7 +112,7 @@ class MessagesService
     private function verifyMessages($id)
     {
         $message = Messages::activeForID($id)->first();
-        if (!$message) return $this->errorResponse('El mensaje seleccionado no esta disponible', 400);
+        if (!$message) return $this->errorResponse('El mensaje seleccionado no esta disponible.', 400);
 
         $validateParticipant = $this->validateParticipant($message->conversation_id);
         if (!$validateParticipant->original['status']) return $validateParticipant;
@@ -131,7 +136,7 @@ class MessagesService
     private function validateParticipant($conversation_id)
     {
         $participant = Participants::participant($conversation_id, $this->userJwt->id)->active()->first();
-        if (!$participant) return $this->errorResponse('No perteneces al chat', 400);
+        if (!$participant) return $this->errorResponse('No perteneces al chat.', 403);
 
         return $this->successResponse('OK');
     }

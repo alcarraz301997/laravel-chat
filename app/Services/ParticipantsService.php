@@ -37,13 +37,13 @@ class ParticipantsService
         DB::beginTransaction();
         try {
             $conversation = Conversations::activeForID($params['conversation_id'])->where('type_id', 2)->first();
-            if(!$conversation) return $this->errorResponse('El chat no es grupo para agregar personas', 400);
+            if(!$conversation) return $this->errorResponse('El chat no es grupo para agregar personas.', 403);
 
             $participant = Participants::create($params);
             $participant->fresh();
 
             DB::commit();
-            return $this->successResponse("Agregado al grupo correctamente", $participant);
+            return $this->successResponse("Agregado al grupo correctamente.", $participant);
         } catch (\Throwable $th) {
             DB::rollBack();
             return $this->externalError("durante la incorporación al grupo.", $th->getMessage());
@@ -57,11 +57,20 @@ class ParticipantsService
             $validate = Participants::activeForID($id)->first();
             if (!$validate) return $this->errorResponse('Participante seleccionado no disponible', 400);
 
+            if($validate->user_id == $this->userJwt->id) {
+                $messageSuccess = 'Saliste del grupo.';
+            } else {
+                $messageSuccess = 'Eliminaste a un miembro del grupo.';
+            }
+
+            $conversation = Conversations::activeForID($validate->conversation_id)->where('type_id', 2)->first();
+            if(!$conversation) return $this->errorResponse('El chat no es grupo.', 403);
+
             $participant = Participants::find($id);
             $participant->update(['status' => 2]);
 
             DB::commit();
-            return $this->successResponse('Eliminaste a un miembro del grupo.');
+            return $this->successResponse($messageSuccess);
         } catch (\Throwable $th) {
             DB::rollBack();
             return $this->externalError('durante la eliminación de un miembro.', $th->getMessage());
